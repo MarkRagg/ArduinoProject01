@@ -1,4 +1,4 @@
-#define LED_PIN_ROSSO 8
+#define LED_PIN_ROSSO 9
 #define LED_PIN1 10
 #define LED_PIN2 11
 #define LED_PIN3 12
@@ -11,6 +11,9 @@
 #include <avr/sleep.h>
 
 int pressed;
+int brightness;
+int fadeAmount;
+int currIntensity;
 
 void wakeUp(){
   /** The program will continue from here. **/
@@ -22,6 +25,8 @@ void wakeUp(){
 void setup() {
   Serial.begin(9600);
   initialize();
+  currIntensity = 0;
+  fadeAmount = 5;
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN1), wakeUp, RISING);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN2), wakeUp, RISING);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN3), wakeUp, RISING);
@@ -30,16 +35,13 @@ void setup() {
 
 void loop() {
   int buttonState = digitalRead(BUTTON_PIN2);
-  if(buttonState == LOW) {
-    digitalWrite(LED_PIN_ROSSO, HIGH);
-    Serial.println("\nWelcome to the Catch the Led Pattern Game. Press Key T1 to Start\n");
-    delay(500);
-    digitalWrite(LED_PIN_ROSSO, LOW);
-    delay(500);
-  }
-
-  delay(2000);
-  sleep();
+  Serial.println("\nWelcome to the Catch the Led Pattern Game. Press Key T1 to Start\n");
+  analogWrite(LED_PIN_ROSSO, currIntensity);   
+  currIntensity = currIntensity + fadeAmount;
+  if (currIntensity == 0 || currIntensity == 255) {
+    fadeAmount = -fadeAmount ; 
+  }     
+  delay(150);               
 
   if (buttonState == HIGH) {
     digitalWrite(LED_PIN1, HIGH);
