@@ -9,10 +9,7 @@
 #define BUTTON_PIN4 5
 
 #include <avr/sleep.h>
-#include <avr/power.h>
-#include "Timer.h"
 
-Timer* timer;
 int pressed;
 
 void wakeUp(){
@@ -25,8 +22,6 @@ void wakeUp(){
 void setup() {
   Serial.begin(9600);
   initialize();
-  timer = new Timer(); /* timer 1 */
-  timer->setupPeriod(10000);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN1), wakeUp, RISING);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN2), wakeUp, RISING);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN3), wakeUp, RISING);
@@ -37,7 +32,7 @@ void loop() {
   int buttonState = digitalRead(BUTTON_PIN2);
   if(buttonState == LOW) {
     digitalWrite(LED_PIN_ROSSO, HIGH);
-    Serial.println("Rosso lampeggia");
+    Serial.println("\nWelcome to the Catch the Led Pattern Game. Press Key T1 to Start\n");
     delay(500);
     digitalWrite(LED_PIN_ROSSO, LOW);
     delay(500);
