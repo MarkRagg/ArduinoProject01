@@ -7,6 +7,7 @@
 #define BUTTON_PIN2 3
 #define BUTTON_PIN3 4
 #define BUTTON_PIN4 5
+#define POTENZIOMETRO A0
 
 #include <avr/sleep.h>
 
@@ -14,6 +15,8 @@ int pressed;
 int brightness;
 int fadeAmount;
 int currIntensity;
+bool gameStart;
+int difficulty;
 
 void wakeUp(){
   /** The program will continue from here. **/
@@ -27,6 +30,7 @@ void setup() {
   initialize();
   currIntensity = 0;
   fadeAmount = 5;
+  gameStart = false;
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN1), wakeUp, RISING);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN2), wakeUp, RISING);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN3), wakeUp, RISING);
@@ -35,14 +39,23 @@ void setup() {
 
 void loop() {
   int buttonState = digitalRead(BUTTON_PIN2);
+  int difficulty = analogRead(POTENZIOMETRO) / 256;
   Serial.println("\nWelcome to the Catch the Led Pattern Game. Press Key T1 to Start\n");
-  analogWrite(LED_PIN_ROSSO, currIntensity);   
-  currIntensity = currIntensity + fadeAmount;
-  if (currIntensity == 0 || currIntensity == 255) {
-    fadeAmount = -fadeAmount ; 
-  }     
-  delay(150);               
+                  
 
+  if (buttonState == HIGH && gameStart == false) {
+    startGame(difficulty);
+    gameStart = true;
+    currIntensity = 0;
+    analogWrite(LED_PIN_ROSSO, currIntensity); 
+  } else if(gameStart == false) {
+    analogWrite(LED_PIN_ROSSO, currIntensity);   
+    currIntensity = currIntensity + fadeAmount;
+    if (currIntensity == 0 || currIntensity == 255) {
+      fadeAmount = -fadeAmount;
+    } 
+  }
+  
   if (buttonState == HIGH) {
     digitalWrite(LED_PIN1, HIGH);
     Serial.println("ON");
@@ -59,6 +72,8 @@ void initialize(){
   for(int i = 2; i<6; i++) {
     pinMode(i, INPUT);
   }
+
+  pinMode(POTENZIOMETRO, INPUT);
 }
 
 void sleep(){
@@ -68,4 +83,8 @@ void sleep(){
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
   sleep_enable();
   sleep_mode();
+}
+
+void startGame(int difficulty) {  
+  return;
 }
