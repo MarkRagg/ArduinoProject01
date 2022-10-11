@@ -55,7 +55,9 @@ void loop() {
 
   if(timer.read() >= 10000) {
     timer.stop();
+    Serial.println("Sleep mode: On");
     sleep();
+    Serial.println("Sleep mode: Off");
     timer.start();
   }
   
@@ -74,11 +76,6 @@ void loop() {
     } 
   }
   
-  if (buttonsState[0] == HIGH) {
-    digitalWrite(LED_PIN1, 1);
-  } else {
-    digitalWrite(LED_PIN1, 0);
- }
 }
 
 void initialize(){
@@ -105,25 +102,42 @@ void startGame(int difficulty) {
   long int timer_start = random(0,6);
   int timer_for_click = (5 - difficulty) * 1000;
   int turn_won = 0;
+  int turn_lost = 0;
+  int ledsOn = 0;
+  int ledsTakes = 0;
   ledsOnOrOff(LOW);
   Serial.println(timer_start);
   delay(timer_start * 1000);
   Serial.println("GO!");
-  randomLedsOn();
+  ledsOn = randomLedsOn();
   timer.start();
   while(timer.read() < timer_for_click || turn_won) {
     for(int i = 0; i < 4; i++) {
       buttonsState[i] = digitalRead(i+2);
-      if (buttonsState[i] == HIGH && gameLeds == 1) {
+      Serial.println(buttonsState[0]);
+      if (buttonsState[i] && gameLeds[i]) {
         score += 10;
-      } else if (buttonsState[i] == HIGH && gameLeds == 0) {
+        gameLeds[i] = 0;
+        ledsTakes++;
+      } else if (buttonsState[i] && gameLeds[i] == 0) {
         penalty++;
         Serial.println("PENALTY: WRONG PATTERN");
         timer.pause();
+        turn_lost = 1;
+        break;
+      }
+
+      if (ledsOn == ledsTakes) {
+        turn_won = 1;
         break;
       }
     }
+    if (turn_lost) {
+      break;
+    }
   }
+  ledsOnOrOff(LOW);
+  
   if(timer.read() >= timer_for_click) {
     penalty++;
     Serial.println("PENALTY: TIME OVER");
@@ -145,8 +159,17 @@ void ledsOnOrOff(int type) {
   }
 }
 
-void randomLedsOn() {
+int randomLedsOn() {
+  int randnum = 0;
+  int ledsOn = 0;
   for(int i = 0; i<4; i++) {
-    digitalWrite(leds[i], random(0, 2));
+    randnum = random(0, 2);
+    digitalWrite(leds[i], randnum);
+    gameLeds[i] = randnum;
+    if (randnum) {
+      ledsOn++;
+    }
   }
+
+  return ledsOn;
 }
