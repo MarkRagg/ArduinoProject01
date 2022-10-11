@@ -20,11 +20,11 @@ bool gameStart;
 int difficulty;
 unsigned int score;
 int buttonsState[4];
+int leds[4] = {LED_PIN1, LED_PIN2, LED_PIN3, LED_PIN4};
 Timer timer(MILLIS);
 
 void wakeUp(){
   /** The program will continue from here. **/
-  Serial.println("WAKE UP");
   /* First thing to do is disable sleep. */
   sleep_disable();
 }
@@ -35,6 +35,7 @@ void setup() {
   currIntensity = 0;
   fadeAmount = 5;
   gameStart = false;
+  randomSeed(analogRead(5));
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN1), wakeUp, RISING);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN2), wakeUp, RISING);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN3), wakeUp, RISING);
@@ -47,7 +48,7 @@ void loop() {
   for(int i = 0; i < 4; i++) {
     buttonsState[i] = digitalRead(i+2);
   }
-  Serial.println(timer.read());
+
   if(timer.read() >= 10000) {
     timer.stop();
     sleep();
@@ -57,10 +58,10 @@ void loop() {
   int difficulty = analogRead(POTENZIOMETRO) / 256;                 
 
   if (buttonsState[0] == HIGH && gameStart == false) {
-    startGame(difficulty);
     gameStart = true;
     currIntensity = 0;
     analogWrite(LED_PIN_ROSSO, currIntensity); 
+    startGame(difficulty);
   } else if(gameStart == false) {
     analogWrite(LED_PIN_ROSSO, currIntensity);   
     currIntensity = currIntensity + fadeAmount;
@@ -77,14 +78,15 @@ void loop() {
 }
 
 void initialize(){
-  for(int i = 9; i<14; i++) {
-    pinMode(i, OUTPUT);
+  for(int i = 0; i<4; i++) {
+    pinMode(leds[0], OUTPUT);
   }
   for(int i = 2; i<6; i++) {
     pinMode(i, INPUT);
   }
 
   pinMode(POTENZIOMETRO, INPUT);
+  pinMode(LED_PIN_ROSSO, INPUT);
 }
 
 void sleep(){
@@ -95,6 +97,16 @@ void sleep(){
 }
 
 void startGame(int difficulty) {  
-  int timer = 5 - difficulty;
+  long int timer_start = random(0,6);
+  ledsOff();
+  Serial.println(timer_start);
+  delay(timer_start * 1000);
+  Serial.println("GO!");
   return;
+}
+
+void ledsOff() {
+  for(int i = 0; i < 4; i++) {
+    digitalWrite(leds[i], LOW);
+  }
 }
