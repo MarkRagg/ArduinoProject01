@@ -10,6 +10,7 @@
 #define POTENZIOMETRO A0
 
 #include <avr/sleep.h>
+#include "Timer.h"
 
 int pressed;
 int brightness;
@@ -19,6 +20,7 @@ bool gameStart;
 int difficulty;
 unsigned int score;
 int buttonsState[4];
+Timer timer(MILLIS);
 
 void wakeUp(){
   /** The program will continue from here. **/
@@ -38,11 +40,18 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN3), wakeUp, RISING);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN4), wakeUp, RISING);
   Serial.println("\nWelcome to the Catch the Led Pattern Game. Press Key T1 to Start\n");
+  timer.start();
 }
 
 void loop() {
   for(int i = 0; i < 4; i++) {
     buttonsState[i] = digitalRead(i+2);
+  }
+  Serial.println(timer.read());
+  if(timer.read() >= 7000) {
+    timer.stop();
+    sleep();
+    timer.start();
   }
   
   int difficulty = analogRead(POTENZIOMETRO) / 256;                 
@@ -62,10 +71,8 @@ void loop() {
   
   if (buttonsState[0] == HIGH) {
     digitalWrite(LED_PIN1, HIGH);
-    Serial.println("ON");
   } else {
     digitalWrite(LED_PIN1, LOW);
-    Serial.println("OFF");
  }
 }
 
@@ -81,9 +88,7 @@ void initialize(){
 }
 
 void sleep(){
-  //Serial.println("GOING IN POWER DOWN IN 10s ...");
-  //Serial.flush();
-  //delay(10000);
+  Serial.flush();
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
   sleep_enable();
   sleep_mode();
