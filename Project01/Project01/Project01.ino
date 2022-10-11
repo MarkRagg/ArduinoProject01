@@ -8,6 +8,7 @@
 #define BUTTON_PIN3 4
 #define BUTTON_PIN4 5
 #define POTENZIOMETRO A0
+#define MAX_PENALTIES 3 
 
 #include <avr/sleep.h>
 #include "Timer.h"
@@ -22,6 +23,8 @@ unsigned int score;
 int buttonsState[4];
 int leds[4] = {LED_PIN1, LED_PIN2, LED_PIN3, LED_PIN4};
 Timer timer(MILLIS);
+int gameLeds[4];
+int penalty;
 
 void wakeUp(){
   /** The program will continue from here. **/
@@ -35,6 +38,7 @@ void setup() {
   currIntensity = 0;
   fadeAmount = 5;
   gameStart = false;
+  penalty = 0;
   randomSeed(analogRead(5));
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN1), wakeUp, RISING);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN2), wakeUp, RISING);
@@ -71,15 +75,16 @@ void loop() {
   }
   
   if (buttonsState[0] == HIGH) {
-    digitalWrite(LED_PIN1, HIGH);
+    digitalWrite(LED_PIN1, 1);
   } else {
-    digitalWrite(LED_PIN1, LOW);
+    digitalWrite(LED_PIN1, 0);
  }
 }
 
 void initialize(){
   for(int i = 0; i<4; i++) {
-    pinMode(leds[0], OUTPUT);
+    pinMode(leds[i], OUTPUT);
+    gameLeds[i] = 0;
   }
   for(int i = 2; i<6; i++) {
     pinMode(i, INPUT);
@@ -98,15 +103,50 @@ void sleep(){
 
 void startGame(int difficulty) {  
   long int timer_start = random(0,6);
-  ledsOff();
+  int timer_for_click = (5 - difficulty) * 1000;
+  int turn_won = 0;
+  ledsOnOrOff(LOW);
   Serial.println(timer_start);
   delay(timer_start * 1000);
   Serial.println("GO!");
+  randomLedsOn();
+  timer.start();
+  while(timer.read() < timer_for_click || turn_won) {
+    for(int i = 0; i < 4; i++) {
+      buttonsState[i] = digitalRead(i+2);
+      if (buttonsState[i] == HIGH && gameLeds == 1) {
+        score += 10;
+      } else if (buttonsState[i] == HIGH && gameLeds == 0) {
+        penalty++;
+        Serial.println("PENALTY: WRONG PATTERN");
+        timer.pause();
+        break;
+      }
+    }
+  }
+  if(timer.read() >= timer_for_click) {
+    penalty++;
+    Serial.println("PENALTY: TIME OVER");
+  }
+
+  if(penalty >= MAX_PENALTIES) {
+    Serial.println("GAME OVER!");
+    Serial.println("Score:");
+    Serial.println(score);
+    return;
+  }
   return;
 }
 
-void ledsOff() {
+void ledsOnOrOff(int type) {
   for(int i = 0; i < 4; i++) {
-    digitalWrite(leds[i], LOW);
+    digitalWrite(leds[i], type);
+    gameLeds[i] = type;
+  }
+}
+
+void randomLedsOn() {
+  for(int i = 0; i<4; i++) {
+    digitalWrite(leds[i], random(0, 2));
   }
 }
