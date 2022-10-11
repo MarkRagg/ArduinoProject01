@@ -48,7 +48,7 @@ void loop() {
     buttonsState[i] = digitalRead(i+2);
   }
   Serial.println(timer.read());
-  if(timer.read() >= 7000) {
+  if(timer.read() >= 10000) {
     timer.stop();
     sleep();
     timer.start();
