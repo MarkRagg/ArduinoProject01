@@ -17,6 +17,8 @@ int fadeAmount;
 int currIntensity;
 bool gameStart;
 int difficulty;
+unsigned int score;
+int buttonsState[4];
 
 void wakeUp(){
   /** The program will continue from here. **/
@@ -35,15 +37,17 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN2), wakeUp, RISING);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN3), wakeUp, RISING);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN4), wakeUp, RISING);
+  Serial.println("\nWelcome to the Catch the Led Pattern Game. Press Key T1 to Start\n");
 }
 
 void loop() {
-  int buttonState = digitalRead(BUTTON_PIN2);
-  int difficulty = analogRead(POTENZIOMETRO) / 256;
-  Serial.println("\nWelcome to the Catch the Led Pattern Game. Press Key T1 to Start\n");
-                  
+  for(int i = 0; i < 4; i++) {
+    buttonsState[i] = digitalRead(i+2);
+  }
+  
+  int difficulty = analogRead(POTENZIOMETRO) / 256;                 
 
-  if (buttonState == HIGH && gameStart == false) {
+  if (buttonsState[0] == HIGH && gameStart == false) {
     startGame(difficulty);
     gameStart = true;
     currIntensity = 0;
@@ -56,7 +60,7 @@ void loop() {
     } 
   }
   
-  if (buttonState == HIGH) {
+  if (buttonsState[0] == HIGH) {
     digitalWrite(LED_PIN1, HIGH);
     Serial.println("ON");
   } else {
@@ -86,5 +90,6 @@ void sleep(){
 }
 
 void startGame(int difficulty) {  
+  int timer = 5 - difficulty;
   return;
 }
