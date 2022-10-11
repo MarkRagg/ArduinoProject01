@@ -43,12 +43,13 @@ void setup() {
 void loop() {  
   int difficulty = analogRead(POTENZIOMETRO) / 256;                 
 
+  turnOnLed();
+
   if (readButton(0) == HIGH && gameStart == false) {
     startGame(difficulty);
     gameStart = true;
     currIntensity = 0;
   } else if(gameStart == false) {
-    Serial.println(currIntensity);
     currIntensity = currIntensity + fadeAmount;
     if (currIntensity == 0 || currIntensity == 255) {
       fadeAmount = -fadeAmount;
@@ -56,8 +57,6 @@ void loop() {
   }
 
   analogWrite(LED_PIN_ROSSO, currIntensity); 
-  
-  turnOnLed();
 }
 
 void initialize(){
@@ -69,15 +68,6 @@ void initialize(){
   }
 
   pinMode(POTENZIOMETRO, INPUT);
-}
-
-void sleep(){
-  //Serial.println("GOING IN POWER DOWN IN 10s ...");
-  //Serial.flush();
-  //delay(10000);
-  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-  sleep_enable();
-  sleep_mode();
 }
 
 int readButton(int button){
@@ -96,6 +86,15 @@ void turnOnLed(){
       digitalWrite(led, LOW);
     }
   }
+}
+
+void sleep(){
+  //Serial.println("GOING IN POWER DOWN IN 10s ...");
+  //Serial.flush();
+  //delay(10000);
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+  sleep_enable();
+  sleep_mode();
 }
 
 void startGame(int difficulty) {  
