@@ -40,33 +40,24 @@ void setup() {
   Serial.println("\nWelcome to the Catch the Led Pattern Game. Press Key T1 to Start\n");
 }
 
-void loop() {
-  for(int i = 0; i < 4; i++) {
-    buttonsState[i] = digitalRead(i+2);
-  }
-  
+void loop() {  
   int difficulty = analogRead(POTENZIOMETRO) / 256;                 
 
-  if (buttonsState[0] == HIGH && gameStart == false) {
+  if (readButton(0) == HIGH && gameStart == false) {
     startGame(difficulty);
     gameStart = true;
     currIntensity = 0;
-    analogWrite(LED_PIN_ROSSO, currIntensity); 
   } else if(gameStart == false) {
-    analogWrite(LED_PIN_ROSSO, currIntensity);   
+    Serial.println(currIntensity);
     currIntensity = currIntensity + fadeAmount;
     if (currIntensity == 0 || currIntensity == 255) {
       fadeAmount = -fadeAmount;
     } 
   }
+
+  analogWrite(LED_PIN_ROSSO, currIntensity); 
   
-  if (buttonsState[0] == HIGH) {
-    digitalWrite(LED_PIN1, HIGH);
-    Serial.println("ON");
-  } else {
-    digitalWrite(LED_PIN1, LOW);
-    Serial.println("OFF");
- }
+  turnOnLed();
 }
 
 void initialize(){
@@ -87,6 +78,24 @@ void sleep(){
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
   sleep_enable();
   sleep_mode();
+}
+
+int readButton(int button){
+  if(digitalRead(button+2) == HIGH){
+    return HIGH;
+  }
+  return LOW;
+}
+
+void turnOnLed(){
+  for(int i = 0; i < 4; i++){
+    int led = i+10;
+    if(readButton(i) == HIGH){
+      digitalWrite(led, HIGH);
+    } else {
+      digitalWrite(led, LOW);
+    }
+  }
 }
 
 void startGame(int difficulty) {  
