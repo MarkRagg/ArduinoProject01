@@ -40,7 +40,7 @@ void setup() {
   Serial.begin(9600);
   initialize();
   currIntensity = 0;
-  fadeAmount = 5;
+  fadeAmount = 1;
   gameStart = false;
 
   penalty = 0;
@@ -62,25 +62,30 @@ void loop() {
   }
   int difficulty = analogRead(POTENZIOMETRO) / 256;                 
 
+  delay(5);
+
   if (buttonsState[0] == HIGH && gameStart == false) {
     gameStart = true;
     currIntensity = 0;
-    delay(500);
+    analogWrite(LED_PIN_ROSSO, currIntensity); 
+    delay(100);
     startGame(difficulty);
   } else if(gameStart == false) {
+    currIntensity += fadeAmount;
     if (currIntensity == 0 || currIntensity == 255) {
-    fadeAmount = -fadeAmount;
+      fadeAmount = -fadeAmount;
+    }
+    analogWrite(LED_PIN_ROSSO, currIntensity); 
   }
-
-  analogWrite(LED_PIN_ROSSO, currIntensity); 
-}
 
   if(timer.read() >= 10000) {
     timer.stop();
     Serial.println("Sleep mode: On");
+    currIntensity = 0;
+    analogWrite(LED_PIN_ROSSO, currIntensity); 
     sleep();
     Serial.println("Sleep mode: Off");
-    delay(500);
+    delay(300);
     timer.start();
   }
   
