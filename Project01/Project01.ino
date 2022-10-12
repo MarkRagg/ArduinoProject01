@@ -32,12 +32,8 @@ long prevts;
 void wakeUp() {
   /** The program will continue from here. **/
   /* First thing to do is disable sleep. */
-  long ts = micros();
-  if (ts - prevts > 10000){
-    prevts = ts;
-    buttonsState[0] = HIGH;
-    sleep_disable();
-  }
+  sleep_disable();
+}
 
 
 void setup() {
