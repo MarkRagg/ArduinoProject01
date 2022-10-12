@@ -25,11 +25,17 @@ int leds[4] = {LED_PIN1, LED_PIN2, LED_PIN3, LED_PIN4};
 Timer timer(MILLIS);
 int gameLeds[4];
 int penalty;
+long prevts;
 
-void wakeUp(){
+void wakeUp() {
   /** The program will continue from here. **/
   /* First thing to do is disable sleep. */
-  sleep_disable();
+  long ts = micros();
+  if (ts - prevts > 10000){
+    prevts = ts;
+    buttonsState[0] = HIGH;
+    sleep_disable();
+  }
 }
 
 void setup() {
@@ -39,6 +45,7 @@ void setup() {
   fadeAmount = 5;
   gameStart = false;
   penalty = 0;
+  prevts = 0;
   randomSeed(analogRead(5));
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN1), wakeUp, RISING);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN2), wakeUp, RISING);
@@ -52,21 +59,13 @@ void loop() {
   for(int i = 0; i < 4; i++) {
     buttonsState[i] = digitalRead(i+2);
   }
-
-  if(timer.read() >= 10000) {
-    timer.stop();
-    Serial.println("Sleep mode: On");
-    sleep();
-    Serial.println("Sleep mode: Off");
-    timer.start();
-  }
-  
   int difficulty = analogRead(POTENZIOMETRO) / 256;                 
 
   if (buttonsState[0] == HIGH && gameStart == false) {
     gameStart = true;
     currIntensity = 0;
     analogWrite(LED_PIN_ROSSO, currIntensity); 
+    delay(500);
     startGame(difficulty);
   } else if(gameStart == false) {
     analogWrite(LED_PIN_ROSSO, currIntensity);   
@@ -74,6 +73,15 @@ void loop() {
     if (currIntensity == 0 || currIntensity == 255) {
       fadeAmount = -fadeAmount;
     } 
+  }
+
+  if(timer.read() >= 10000) {
+    timer.stop();
+    Serial.println("Sleep mode: On");
+    sleep();
+    Serial.println("Sleep mode: Off");
+    delay(500);
+    timer.start();
   }
   
 }
@@ -93,6 +101,7 @@ void initialize(){
 
 void sleep(){
   Serial.flush();
+  delay(100);
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
   sleep_enable();
   sleep_mode();
@@ -100,24 +109,33 @@ void sleep(){
 
 void startGame(int difficulty) {  
   long int timer_start = random(0,6);
-  int timer_for_click = (5 - difficulty) * 1000;
+  int timer_for_click = (10 - difficulty) * 1000;
   int turn_won = 0;
   int turn_lost = 0;
   int ledsOn = 0;
   int ledsTakes = 0;
   ledsOnOrOff(LOW);
+  gameLedsOff();
   Serial.println(timer_start);
   delay(timer_start * 1000);
   Serial.println("GO!");
   ledsOn = randomLedsOn();
+  delay(timer_for_click);
+  ledsOnOrOff(LOW);
   timer.start();
   while(timer.read() < timer_for_click || turn_won) {
+    if (ledsOn == ledsTakes) {
+      turn_won = 1;
+      break;
+    }
+    
     for(int i = 0; i < 4; i++) {
       buttonsState[i] = digitalRead(i+2);
-      Serial.println(buttonsState[0]);
-      if (buttonsState[i] && gameLeds[i]) {
-        score += 10;
-        gameLeds[i] = 0;
+      Serial.println("Print n.");
+      Serial.println(i);
+      Serial.println(buttonsState[i]);
+      if (buttonsState[i] && gameLeds[i] == 1) {
+        digitalWrite(leds[i], HIGH);
         ledsTakes++;
       } else if (buttonsState[i] && gameLeds[i] == 0) {
         penalty++;
@@ -126,12 +144,8 @@ void startGame(int difficulty) {
         turn_lost = 1;
         break;
       }
-
-      if (ledsOn == ledsTakes) {
-        turn_won = 1;
-        break;
-      }
     }
+    
     if (turn_lost) {
       break;
     }
@@ -155,7 +169,12 @@ void startGame(int difficulty) {
 void ledsOnOrOff(int type) {
   for(int i = 0; i < 4; i++) {
     digitalWrite(leds[i], type);
-    gameLeds[i] = type;
+  }
+}
+
+void gameLedsOff() {
+  for(int i = 0; i<4; i++) {
+     gameLeds[i] = 0;
   }
 }
 
