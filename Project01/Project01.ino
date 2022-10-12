@@ -8,6 +8,7 @@
 #define BUTTON_PIN3 4
 #define BUTTON_PIN4 5
 #define POTENZIOMETRO A0
+
 #define MAX_PENALTIES 3 
 
 #include <avr/sleep.h>
@@ -21,6 +22,7 @@ bool gameStart;
 int difficulty;
 unsigned int score;
 int buttonsState[4];
+
 int leds[4] = {LED_PIN1, LED_PIN2, LED_PIN3, LED_PIN4};
 Timer timer(MILLIS);
 int gameLeds[4];
@@ -36,7 +38,7 @@ void wakeUp() {
     buttonsState[0] = HIGH;
     sleep_disable();
   }
-}
+
 
 void setup() {
   Serial.begin(9600);
@@ -44,14 +46,17 @@ void setup() {
   currIntensity = 0;
   fadeAmount = 5;
   gameStart = false;
+
   penalty = 0;
   prevts = 0;
   randomSeed(analogRead(5));
+
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN1), wakeUp, RISING);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN2), wakeUp, RISING);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN3), wakeUp, RISING);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN4), wakeUp, RISING);
   Serial.println("\nWelcome to the Catch the Led Pattern Game. Press Key T1 to Start\n");
+
   timer.start();
 }
 
@@ -69,11 +74,25 @@ void loop() {
     startGame(difficulty);
   } else if(gameStart == false) {
     analogWrite(LED_PIN_ROSSO, currIntensity);   
+
+}
+
+void loop() {  
+  int difficulty = analogRead(POTENZIOMETRO) / 256;                 
+
+  turnOnLed();
+
+  if (readButton(0) == HIGH && gameStart == false) {
+    startGame(difficulty);
+    gameStart = true;
+    currIntensity = 0;
+  } else if(gameStart == false) {
     currIntensity = currIntensity + fadeAmount;
     if (currIntensity == 0 || currIntensity == 255) {
       fadeAmount = -fadeAmount;
     } 
   }
+
 
   if(timer.read() >= 10000) {
     timer.stop();
@@ -191,4 +210,13 @@ int randomLedsOn() {
   }
 
   return ledsOn;
+
+}
+
+int readButton(int button){
+  if(digitalRead(button+2) == HIGH){
+    return HIGH;
+  }
+  return LOW;
+}
 }
