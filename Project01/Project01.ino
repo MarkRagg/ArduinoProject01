@@ -64,12 +64,18 @@ void loop() {
 
   delay(5);
 
-  if (buttonsState[0] == HIGH && gameStart == false) {
+  if ((buttonsState[0] == HIGH && gameStart == false) || gameStart) {
     gameStart = true;
     currIntensity = 0;
     analogWrite(LED_PIN_ROSSO, currIntensity); 
     delay(100);
     startGame(difficulty);
+    if(penalty >= MAX_PENALTIES) {
+      Serial.println("GAME OVER!");
+      Serial.println("Score:");
+      Serial.println(score);
+      gameStart = false;
+    }
   } else if(gameStart == false) {
     currIntensity += fadeAmount;
     if (currIntensity == 0 || currIntensity == 255) {
@@ -131,7 +137,9 @@ void startGame(int difficulty) {
   while(timer.read() < timer_for_click || turn_won) {
     if (ledsOn == ledsTakes) {
       turn_won = 1;
-      Serial.println("YOU WON!");
+      score += 1;
+      Serial.println("New point! Score: ");
+      Serial.println(score);
       break;
     }
     
@@ -144,6 +152,8 @@ void startGame(int difficulty) {
       } else if (buttonsState[i] && gameLeds[i] == 0) {
         penalty++;
         Serial.println("PENALTY: WRONG PATTERN");
+        digitalWrite(LED_PIN_ROSSO, HIGH);
+        delay(1000);
         timer.pause();
         turn_lost = 1;
         break;
@@ -159,14 +169,10 @@ void startGame(int difficulty) {
   if(timer.read() >= timer_for_click) {
     penalty++;
     Serial.println("PENALTY: TIME OVER");
+    digitalWrite(LED_PIN_ROSSO, HIGH);
+    delay(1000);
   }
 
-  if(penalty >= MAX_PENALTIES) {
-    Serial.println("GAME OVER!");
-    Serial.println("Score:");
-    Serial.println(score);
-    return;
-  }
   return;
 }
 
