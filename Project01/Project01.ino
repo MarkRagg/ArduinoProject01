@@ -47,6 +47,7 @@ void setup() {
   state = INITIAL_STATE;
   penalty = 0;
   prevts = 0;
+  score = 0;
   randomSeed(analogRead(5));
 
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN1), wakeUp, RISING);
@@ -93,6 +94,7 @@ void loop() {
       digitalWrite(LED_PIN_ROSSO, LOW); 
       if(penalty >= MAX_PENALTIES) {
         penalty = 0;
+        score = 0;
         Serial.println("GAME OVER!");
         Serial.println("Final Score:");
         Serial.println(score);
