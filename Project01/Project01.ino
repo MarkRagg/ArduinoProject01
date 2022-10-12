@@ -65,30 +65,15 @@ void loop() {
   if (buttonsState[0] == HIGH && gameStart == false) {
     gameStart = true;
     currIntensity = 0;
-    analogWrite(LED_PIN_ROSSO, currIntensity); 
     delay(500);
     startGame(difficulty);
   } else if(gameStart == false) {
-    analogWrite(LED_PIN_ROSSO, currIntensity);   
-
-}
-
-void loop() {  
-  int difficulty = analogRead(POTENZIOMETRO) / 256;                 
-
-  turnOnLed();
-
-  if (readButton(0) == HIGH && gameStart == false) {
-    startGame(difficulty);
-    gameStart = true;
-    currIntensity = 0;
-  } else if(gameStart == false) {
-    currIntensity = currIntensity + fadeAmount;
     if (currIntensity == 0 || currIntensity == 255) {
-      fadeAmount = -fadeAmount;
-    } 
+    fadeAmount = -fadeAmount;
   }
 
+  analogWrite(LED_PIN_ROSSO, currIntensity); 
+}
 
   if(timer.read() >= 10000) {
     timer.stop();
@@ -141,16 +126,15 @@ void startGame(int difficulty) {
   while(timer.read() < timer_for_click || turn_won) {
     if (ledsOn == ledsTakes) {
       turn_won = 1;
+      Serial.println("YOU WON!");
       break;
     }
     
     for(int i = 0; i < 4; i++) {
       buttonsState[i] = digitalRead(i+2);
-      Serial.println("Print n.");
-      Serial.println(i);
-      Serial.println(buttonsState[i]);
       if (buttonsState[i] && gameLeds[i] == 1) {
         digitalWrite(leds[i], HIGH);
+        gameLeds[i] = 2;
         ledsTakes++;
       } else if (buttonsState[i] && gameLeds[i] == 0) {
         penalty++;
@@ -214,5 +198,4 @@ int readButton(int button){
     return HIGH;
   }
   return LOW;
-}
 }
