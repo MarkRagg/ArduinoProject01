@@ -9,6 +9,9 @@
 #define BUTTON_PIN4 5
 #define POTENZIOMETRO A0
 
+#define INITIAL_STATE 100
+#define IN_GAME 101
+
 #define MAX_PENALTIES 3 
 
 #include <avr/sleep.h>
@@ -18,7 +21,7 @@ int pressed;
 int brightness;
 int fadeAmount;
 int currIntensity;
-bool gameStart;
+int state;
 int difficulty;
 unsigned int score;
 int buttonsState[4];
@@ -41,8 +44,7 @@ void setup() {
   initialize();
   currIntensity = 0;
   fadeAmount = 1;
-  gameStart = false;
-
+  state = INITIAL_STATE;
   penalty = 0;
   prevts = 0;
   randomSeed(analogRead(5));
@@ -57,43 +59,54 @@ void setup() {
 }
 
 void loop() {
-  for(int i = 0; i < 4; i++) {
-    buttonsState[i] = digitalRead(i+2);
-  }
   int difficulty = analogRead(POTENZIOMETRO) / 256;                 
-
+ 
   delay(5);
 
-  if ((buttonsState[0] == HIGH && gameStart == false) || gameStart) {
-    gameStart = true;
-    currIntensity = 0;
-    analogWrite(LED_PIN_ROSSO, currIntensity); 
-    delay(100);
-    startGame(difficulty);
-    if(penalty >= MAX_PENALTIES) {
-      Serial.println("GAME OVER!");
-      Serial.println("Score:");
-      Serial.println(score);
-      gameStart = false;
+  switch (state) {
+    case INITIAL_STATE :
+      if (readButton(0) == HIGH) {
+      digitalWrite(LED_PIN_ROSSO, LOW); 
+      delay(100);
+      state = IN_GAME;
+      Serial.println("GO!");
+      startGame(difficulty);
+    } else {
+      currIntensity += fadeAmount;
+      if (currIntensity <= 0 || currIntensity >= 255) {
+        fadeAmount = -fadeAmount;
+      }
+      analogWrite(LED_PIN_ROSSO, currIntensity); 
     }
-  } else if(gameStart == false) {
-    currIntensity += fadeAmount;
-    if (currIntensity == 0 || currIntensity == 255) {
-      fadeAmount = -fadeAmount;
+
+    if(timer.read() >= 10000) {
+      timer.stop();
+      Serial.println("Sleep mode: On");
+      digitalWrite(LED_PIN_ROSSO, LOW); 
+      sleep();
+      Serial.println("Sleep mode: Off");
+      delay(300);
+      timer.start();
     }
-    analogWrite(LED_PIN_ROSSO, currIntensity); 
+    break;
+    case IN_GAME :
+      digitalWrite(LED_PIN_ROSSO, LOW); 
+      if(penalty >= MAX_PENALTIES) {
+        penalty = 0;
+        Serial.println("GAME OVER!");
+        Serial.println("Final Score:");
+        Serial.println(score);
+        state = INITIAL_STATE;
+        delay(10000);
+        timer.start();
+        Serial.println("\nWelcome to the Catch the Led Pattern Game. Press Key T1 to Start\n");
+      } else {
+        startGame(difficulty);
+      }
+    break;
   }
 
-  if(timer.read() >= 10000) {
-    timer.stop();
-    Serial.println("Sleep mode: On");
-    currIntensity = 0;
-    analogWrite(LED_PIN_ROSSO, currIntensity); 
-    sleep();
-    Serial.println("Sleep mode: Off");
-    delay(300);
-    timer.start();
-  }
+  
   
 }
 
@@ -120,7 +133,7 @@ void sleep(){
 
 void startGame(int difficulty) {  
   long int timer_start = random(0,6);
-  int timer_for_click = (10 - difficulty) * 1000;
+  int timer_for_click = (5 - difficulty) * 1000;
   int turn_won = 0;
   int turn_lost = 0;
   int ledsOn = 0;
@@ -129,7 +142,6 @@ void startGame(int difficulty) {
   gameLedsOff();
   Serial.println(timer_start);
   delay(timer_start * 1000);
-  Serial.println("GO!");
   ledsOn = randomLedsOn();
   delay(timer_for_click);
   ledsOnOrOff(LOW);
@@ -144,12 +156,11 @@ void startGame(int difficulty) {
     }
     
     for(int i = 0; i < 4; i++) {
-      buttonsState[i] = digitalRead(i+2);
-      if (buttonsState[i] && gameLeds[i] == 1) {
+      if (readButton(i) == HIGH && gameLeds[i] == 1) {
         digitalWrite(leds[i], HIGH);
         gameLeds[i] = 2;
         ledsTakes++;
-      } else if (buttonsState[i] && gameLeds[i] == 0) {
+      } else if (readButton(i) && gameLeds[i] == 0) {
         penalty++;
         Serial.println("PENALTY: WRONG PATTERN");
         digitalWrite(LED_PIN_ROSSO, HIGH);
@@ -164,6 +175,7 @@ void startGame(int difficulty) {
       break;
     }
   }
+  delay(1000);
   ledsOnOrOff(LOW);
   
   if(timer.read() >= timer_for_click) {
