@@ -94,10 +94,10 @@ void loop() {
       digitalWrite(LED_PIN_ROSSO, LOW); 
       if(penalty >= MAX_PENALTIES) {
         penalty = 0;
-        score = 0;
         Serial.println("GAME OVER!");
         Serial.println("Final Score:");
         Serial.println(score);
+        score = 0;
         state = INITIAL_STATE;
         delay(10000);
         timer.start();
