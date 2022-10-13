@@ -10,6 +10,10 @@
 #define POTENZIOMETRO A0
 
 #define START_GAME_BUTTON 0
+#define N_LEDS 4
+
+#define CORRECT 1
+#define INCORRECT 0 
 
 #define INITIAL_STATE 100
 #define IN_GAME 101
@@ -26,23 +30,16 @@ int currIntensity;
 int state;
 int difficulty;
 unsigned int score;
-int buttonsState[4];
 
 int leds[4] = {LED_PIN1, LED_PIN2, LED_PIN3, LED_PIN4};
+int buttons[4] = {BUTTON_PIN1, BUTTON_PIN2, BUTTON_PIN3, BUTTON_PIN4};
+
 Timer timer(MILLIS);
-int gameLeds[4];
+int patternLeds[4];
 int penalty;
 long prevts;
 
 void wakeUp() {
-  /** The program will continue from here. **/
-  /* First thing to do is disable sleep. */
-  sleep_disable();
-}
-
-void wakeUp2() {
-  /** The program will continue from here. **/
-  /* First thing to do is disable sleep. */
   sleep_disable();
 }
 
@@ -123,20 +120,16 @@ void loop() {
       }
     break;
   }
-  
 }
 
 void initialize(){
-  for(int i = 0; i<4; i++) {
+  for(int i = 0; i < N_LEDS; i++) {
     pinMode(leds[i], OUTPUT);
-    gameLeds[i] = 0;
+    pinMode(buttons[i], INPUT);
+    patternLeds[i] = INCORRECT;
   }
-  for(int i = 2; i<6; i++) {
-    pinMode(i, INPUT);
-  }
-
   pinMode(POTENZIOMETRO, INPUT);
-  //pinMode(LED_PIN_ROSSO, INPUT);
+  pinMode(LED_PIN_ROSSO, OUTPUT);
 }
 
 void sleep(){
@@ -153,17 +146,17 @@ void startGame(int difficulty) {
   int turn_won = 0;
   int turn_lost = 0;
   int ledsOn = 0;
-  int ledsTakes = 0;
-  ledsOnOrOff(LOW);
-  gameLedsOff();
+  int correctLeds = 0;
+  setLedsState(LOW);
+  patternLedsOff();     //?????
   Serial.println(timer_start);
   delay(timer_start * 1000);
   ledsOn = randomLedsOn();
   delay(timer_for_click);
-  ledsOnOrOff(LOW);
+  setLedsState(LOW);
   timer.start();
   while(timer.read() < timer_for_click || turn_won) {
-    if (ledsOn == ledsTakes) {
+    if (ledsOn == correctLeds) {
       turn_won = 1;
       score += 1;
       Serial.println("New point! Score: ");
@@ -171,19 +164,21 @@ void startGame(int difficulty) {
       break;
     }
     
-    for(int i = 0; i < 4; i++) {
-      if (isButtonPressed(i) && gameLeds[i] == 1) {
-        digitalWrite(leds[i], HIGH);
-        gameLeds[i] = 2;
-        ledsTakes++;
-      } else if (isButtonPressed(i) && gameLeds[i] == 0) {
-        penalty++;
-        Serial.println("PENALTY: WRONG PATTERN");
-        digitalWrite(LED_PIN_ROSSO, HIGH);
-        delay(1000);
-        timer.pause();
-        turn_lost = 1;
-        break;
+    for(int i = 0; i < N_LEDS; i++) {
+      if(isButtonPressed(i)) {
+          if(patternLeds[i] == CORRECT) {
+            digitalWrite(leds[i], HIGH);
+            patternLeds[i] = 2;
+            correctLeds++;
+        } else if (patternLeds[i] == INCORRECT) {
+            penalty++;
+            Serial.println("PENALTY: WRONG PATTERN");
+            digitalWrite(LED_PIN_ROSSO, HIGH);
+            delay(1000);
+            timer.pause();
+            turn_lost = 1;
+            break;
+        }
       }
     }
     
@@ -192,7 +187,7 @@ void startGame(int difficulty) {
     }
   }
   delay(1000);
-  ledsOnOrOff(LOW);
+  setLedsState(LOW);
   
   if(timer.read() >= timer_for_click) {
     penalty++;
@@ -204,25 +199,25 @@ void startGame(int difficulty) {
   return;
 }
 
-void ledsOnOrOff(int type) {
-  for(int i = 0; i < 4; i++) {
+void setLedsState(int type) {
+  for(int i = 0; i < N_LEDS; i++) {
     digitalWrite(leds[i], type);
   }
 }
 
-void gameLedsOff() {
-  for(int i = 0; i<4; i++) {
-     gameLeds[i] = 0;
+void patternLedsOff() {
+  for(int i = 0; i < N_LEDS; i++) {
+     patternLeds[i] = 0;
   }
 }
 
 int randomLedsOn() {
   int randnum = 0;
   int ledsOn = 0;
-  for(int i = 0; i<4; i++) {
+  for(int i = 0; i < N_LEDS; i++) {
     randnum = random(0, 2);
     digitalWrite(leds[i], randnum);
-    gameLeds[i] = randnum;
+    patternLeds[i] = randnum;
     if (randnum) {
       ledsOn++;
     }
