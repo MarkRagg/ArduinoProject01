@@ -12,6 +12,9 @@
 #define START_GAME_BUTTON 0
 #define N_LEDS 4
 
+#define CORRECT 1
+#define INCORRECT 0 
+
 #define INITIAL_STATE 100
 #define IN_GAME 101
 
@@ -32,7 +35,7 @@ int leds[4] = {LED_PIN1, LED_PIN2, LED_PIN3, LED_PIN4};
 int buttons[4] = {BUTTON_PIN1, BUTTON_PIN2, BUTTON_PIN3, BUTTON_PIN4};
 
 Timer timer(MILLIS);
-int gameLeds[4];
+int patternLeds[4];
 int penalty;
 long prevts;
 
@@ -114,7 +117,7 @@ void initialize(){
   for(int i = 0; i < N_LEDS; i++) {
     pinMode(leds[i], OUTPUT);
     pinMode(buttons[i], INPUT);
-    gameLeds[i] = 0;
+    patternLeds[i] = INCORRECT;
   }
   pinMode(POTENZIOMETRO, INPUT);
   pinMode(LED_PIN_ROSSO, OUTPUT);
@@ -134,9 +137,9 @@ void startGame(int difficulty) {
   int turn_won = 0;
   int turn_lost = 0;
   int ledsOn = 0;
-  int ledsTakes = 0;
+  int correctLeds = 0;
   setLedsState(LOW);
-  gameLedsOff();
+  patternLedsOff();     //?????
   Serial.println(timer_start);
   delay(timer_start * 1000);
   ledsOn = randomLedsOn();
@@ -144,7 +147,7 @@ void startGame(int difficulty) {
   setLedsState(LOW);
   timer.start();
   while(timer.read() < timer_for_click || turn_won) {
-    if (ledsOn == ledsTakes) {
+    if (ledsOn == correctLeds) {
       turn_won = 1;
       score += 1;
       Serial.println("New point! Score: ");
@@ -154,11 +157,11 @@ void startGame(int difficulty) {
     
     for(int i = 0; i < N_LEDS; i++) {
       if(isButtonPressed(i)) {
-          if (gameLeds[i] == 1) {
+          if(patternLeds[i] == CORRECT) {
             digitalWrite(leds[i], HIGH);
-            gameLeds[i] = 2;
-            ledsTakes++;
-        } else if (gameLeds[i] == 0) {
+            patternLeds[i] = 2;
+            correctLeds++;
+        } else if (patternLeds[i] == INCORRECT) {
             penalty++;
             Serial.println("PENALTY: WRONG PATTERN");
             digitalWrite(LED_PIN_ROSSO, HIGH);
@@ -193,9 +196,9 @@ void setLedsState(int type) {
   }
 }
 
-void gameLedsOff() {
+void patternLedsOff() {
   for(int i = 0; i < N_LEDS; i++) {
-     gameLeds[i] = 0;
+     patternLeds[i] = 0;
   }
 }
 
@@ -205,7 +208,7 @@ int randomLedsOn() {
   for(int i = 0; i < N_LEDS; i++) {
     randnum = random(0, 2);
     digitalWrite(leds[i], randnum);
-    gameLeds[i] = randnum;
+    patternLeds[i] = randnum;
     if (randnum) {
       ledsOn++;
     }
