@@ -26,20 +26,18 @@ int currIntensity;
 int state;
 int difficulty;
 unsigned int score;
-int buttonsState[4];
 
 int leds[4] = {LED_PIN1, LED_PIN2, LED_PIN3, LED_PIN4};
+int buttons[4] = {BUTTON_PIN1, BUTTON_PIN2, BUTTON_PIN3, BUTTON_PIN4};
+
 Timer timer(MILLIS);
 int gameLeds[4];
 int penalty;
 long prevts;
 
 void wakeUp() {
-  /** The program will continue from here. **/
-  /* First thing to do is disable sleep. */
   sleep_disable();
 }
-
 
 void setup() {
   Serial.begin(9600);
@@ -109,22 +107,16 @@ void loop() {
       }
     break;
   }
-
-  
-  
 }
 
 void initialize(){
   for(int i = 0; i<4; i++) {
     pinMode(leds[i], OUTPUT);
+    pinMode(buttons[i], INPUT);
     gameLeds[i] = 0;
   }
-  for(int i = 2; i<6; i++) {
-    pinMode(i, INPUT);
-  }
-
   pinMode(POTENZIOMETRO, INPUT);
-  pinMode(LED_PIN_ROSSO, INPUT);
+  pinMode(LED_PIN_ROSSO, OUTPUT);
 }
 
 void sleep(){
@@ -142,13 +134,13 @@ void startGame(int difficulty) {
   int turn_lost = 0;
   int ledsOn = 0;
   int ledsTakes = 0;
-  ledsOnOrOff(LOW);
+  setLedsState(LOW);
   gameLedsOff();
   Serial.println(timer_start);
   delay(timer_start * 1000);
   ledsOn = randomLedsOn();
   delay(timer_for_click);
-  ledsOnOrOff(LOW);
+  setLedsState(LOW);
   timer.start();
   while(timer.read() < timer_for_click || turn_won) {
     if (ledsOn == ledsTakes) {
@@ -180,7 +172,7 @@ void startGame(int difficulty) {
     }
   }
   delay(1000);
-  ledsOnOrOff(LOW);
+  setLedsState(LOW);
   
   if(timer.read() >= timer_for_click) {
     penalty++;
@@ -192,7 +184,7 @@ void startGame(int difficulty) {
   return;
 }
 
-void ledsOnOrOff(int type) {
+void setLedsState(int type) {
   for(int i = 0; i < 4; i++) {
     digitalWrite(leds[i], type);
   }
