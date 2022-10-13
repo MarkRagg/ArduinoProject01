@@ -10,6 +10,7 @@
 #define POTENZIOMETRO A0
 
 #define START_GAME_BUTTON 0
+#define N_LEDS 4
 
 #define INITIAL_STATE 100
 #define IN_GAME 101
@@ -110,7 +111,7 @@ void loop() {
 }
 
 void initialize(){
-  for(int i = 0; i<4; i++) {
+  for(int i = 0; i < N_LEDS; i++) {
     pinMode(leds[i], OUTPUT);
     pinMode(buttons[i], INPUT);
     gameLeds[i] = 0;
@@ -151,19 +152,21 @@ void startGame(int difficulty) {
       break;
     }
     
-    for(int i = 0; i < 4; i++) {
-      if (isButtonPressed(i) && gameLeds[i] == 1) {
-        digitalWrite(leds[i], HIGH);
-        gameLeds[i] = 2;
-        ledsTakes++;
-      } else if (isButtonPressed(i) && gameLeds[i] == 0) {
-        penalty++;
-        Serial.println("PENALTY: WRONG PATTERN");
-        digitalWrite(LED_PIN_ROSSO, HIGH);
-        delay(1000);
-        timer.pause();
-        turn_lost = 1;
-        break;
+    for(int i = 0; i < N_LEDS; i++) {
+      if(isButtonPressed(i)) {
+          if (gameLeds[i] == 1) {
+            digitalWrite(leds[i], HIGH);
+            gameLeds[i] = 2;
+            ledsTakes++;
+        } else if (gameLeds[i] == 0) {
+            penalty++;
+            Serial.println("PENALTY: WRONG PATTERN");
+            digitalWrite(LED_PIN_ROSSO, HIGH);
+            delay(1000);
+            timer.pause();
+            turn_lost = 1;
+            break;
+        }
       }
     }
     
@@ -185,13 +188,13 @@ void startGame(int difficulty) {
 }
 
 void setLedsState(int type) {
-  for(int i = 0; i < 4; i++) {
+  for(int i = 0; i < N_LEDS; i++) {
     digitalWrite(leds[i], type);
   }
 }
 
 void gameLedsOff() {
-  for(int i = 0; i<4; i++) {
+  for(int i = 0; i < N_LEDS; i++) {
      gameLeds[i] = 0;
   }
 }
@@ -199,7 +202,7 @@ void gameLedsOff() {
 int randomLedsOn() {
   int randnum = 0;
   int ledsOn = 0;
-  for(int i = 0; i<4; i++) {
+  for(int i = 0; i < N_LEDS; i++) {
     randnum = random(0, 2);
     digitalWrite(leds[i], randnum);
     gameLeds[i] = randnum;
