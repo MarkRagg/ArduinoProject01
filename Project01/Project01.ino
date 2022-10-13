@@ -9,6 +9,8 @@
 #define BUTTON_PIN4 5
 #define POTENZIOMETRO A0
 
+#define START_GAME_BUTTON 0
+
 #define INITIAL_STATE 100
 #define IN_GAME 101
 
@@ -66,7 +68,7 @@ void loop() {
 
   switch (state) {
     case INITIAL_STATE :
-      if (readButton(0) == HIGH) {
+      if (isButtonPressed(START_GAME_BUTTON)) {
       digitalWrite(LED_PIN_ROSSO, LOW); 
       delay(100);
       state = IN_GAME;
@@ -158,11 +160,11 @@ void startGame(int difficulty) {
     }
     
     for(int i = 0; i < 4; i++) {
-      if (readButton(i) == HIGH && gameLeds[i] == 1) {
+      if (isButtonPressed(i) && gameLeds[i] == 1) {
         digitalWrite(leds[i], HIGH);
         gameLeds[i] = 2;
         ledsTakes++;
-      } else if (readButton(i) && gameLeds[i] == 0) {
+      } else if (isButtonPressed(i) && gameLeds[i] == 0) {
         penalty++;
         Serial.println("PENALTY: WRONG PATTERN");
         digitalWrite(LED_PIN_ROSSO, HIGH);
@@ -213,14 +215,12 @@ int randomLedsOn() {
       ledsOn++;
     }
   }
-
   return ledsOn;
-
 }
 
-int readButton(int button){
+bool isButtonPressed(int button){
   if(digitalRead(button+2) == HIGH){
-    return HIGH;
+    return true;
   }
-  return LOW;
+  return false;
 }
