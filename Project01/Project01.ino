@@ -151,14 +151,32 @@ void startGame(int difficulty) {
   setLedsState(LOW);
   Serial.println(timer_start);
   delay(timer_start * 1000);
-  
-  ledsOn = createPattern();
 
-  delay(timer_for_click);
+  ledsOn = createPattern();
+  timer.start();
+  while(timer.read() <= (timer_for_click)) {
+    for(int i = 0; i < GAME_LEDS; i++){
+      if(isButtonPressed(i)){
+        penalty++;
+        Serial.println("PENALTY: TOO EARLY");
+        digitalWrite(LED_PIN_ROSSO, HIGH);
+        delay(1000)
+        timer.pause();
+        turn_lost = 1;
+      }
+    }
+  }
+
+  //delay(timer_for_click);
   setLedsState(LOW);
   timer.start();
 
-  while(timer.read() < timer_for_click || turn_won) {
+  while((timer.read() < timer_for_click || turn_won) && turn_lost == 0) {
+        
+    if (turn_lost) {
+      break;
+    }
+
     if (ledsOn == correctLeds) {
       turn_won = 1;
       score += 1;
@@ -183,10 +201,6 @@ void startGame(int difficulty) {
             break;
         }
       }
-    }
-    
-    if (turn_lost) {
-      break;
     }
   }
   delay(1000);
