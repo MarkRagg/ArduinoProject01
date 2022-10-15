@@ -12,8 +12,9 @@
 #define START_GAME_BUTTON 0
 #define GAME_LEDS 4
 
+#define INCORRECT 0
 #define CORRECT 1
-#define INCORRECT 0 
+#define TAKEN 2
 
 #define INITIAL_STATE 100
 #define IN_GAME 101
@@ -143,7 +144,6 @@ void sleep(){
 void startGame(int difficulty) {  
   long int timer_start = random(0,6);
   int timer_for_click = (5 - difficulty) * 1000;
-  int turn_won = 0;
   int turn_lost = 0;
   int ledsOn = 0;
   int correctLeds = 0;
@@ -165,18 +165,11 @@ void startGame(int difficulty) {
 
   timer.stop();
 
-  //delay(timer_for_click);
   setLedsState(LOW);
   timer.start();
 
-  while(timer.read() < timer_for_click || turn_won) {
-        
-    if (turn_lost) {
-      break;
-    }
-
+  while(timer.read() < timer_for_click && !turn_lost) {
     if (ledsOn == correctLeds) {
-      turn_won = 1;
       score += 1;
       timer.pause();
       Serial.println("New point! Score: ");
@@ -188,7 +181,7 @@ void startGame(int difficulty) {
       if(isButtonPressed(i)) {
           if(patternLeds[i] == CORRECT) {
             digitalWrite(leds[i], HIGH);
-            patternLeds[i] = 2;
+            patternLeds[i] = TAKEN;
             correctLeds++;
         } else if (patternLeds[i] == INCORRECT) {
             addPenalty("PENALTY: WRONG PATTERN");
@@ -206,7 +199,6 @@ void startGame(int difficulty) {
   if(timer.read() >= timer_for_click) {
     addPenalty("PENALTY: TIME OVER");
   }
-
   return;
 }
 
