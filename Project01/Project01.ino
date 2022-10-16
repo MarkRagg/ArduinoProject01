@@ -79,13 +79,12 @@ ISR(PCINT2_vect) {
 }  
 
 void loop() {
-  int difficulty = analogRead(POTENZIOMETRO) / 256;        
-
   delay(5);
 
   switch (state) {
     case INITIAL_STATE :
       if (isButtonPressed(START_GAME_BUTTON)) {
+      difficulty = (analogRead(POTENZIOMETRO) / 256) + 1;  
       digitalWrite(LED_PIN_ROSSO, LOW); 
       delay(100);
       state = IN_GAME;
@@ -112,12 +111,14 @@ void loop() {
     case IN_GAME :
       digitalWrite(LED_PIN_ROSSO, LOW); 
       if(penalty >= MAX_PENALTIES) {
-        score = 0;
-        incDiff = 0;
-        penalty = 0;
         Serial.println("GAME OVER!");
         Serial.println("Final Score:");
         Serial.println(score);
+
+        score = 0;
+        incDiff = 0;
+        penalty = 0;
+
         state = INITIAL_STATE;
         delay(10000);
         timer.start();
@@ -148,9 +149,9 @@ void sleep(){
 }
 
 void startGame(int difficulty) {  
-  long int timer_start = random(0,6);
+  long int timer_start = random(1,6);
   int availableTime = (10 - difficulty - incDiff) * 1000;
-  int turn_lost = 0;
+  int turnLost = 0;
   int ledsOn = 0;
   int correctLeds = 0;
 
@@ -164,11 +165,12 @@ void startGame(int difficulty) {
   
   ledsOn = createPattern();
   timer.start();
-  while(timer.read() <= availableTime) {
+  while(timer.read() <= availableTime && !turnLost) {
     for(int i = 0; i < GAME_LEDS; i++){
       if(isButtonPressed(i)){
         addPenalty("PENALTY: TOO EARLY");
-        turn_lost = 1;
+        turnLost = 1;
+        break;
       }
     }
   }
@@ -178,7 +180,7 @@ void startGame(int difficulty) {
   setLedsState(LOW);
   timer.start();
 
-  while(timer.read() < availableTime && !turn_lost) {
+  while(timer.read() <= availableTime && !turnLost) {
     if(ledsOn == correctLeds) {
       score++;
       timer.pause();
@@ -211,7 +213,7 @@ void startGame(int difficulty) {
         } else if (patternLeds[i] == INCORRECT) {
             addPenalty("PENALTY: WRONG PATTERN");
             timer.pause();
-            turn_lost = 1;
+            turnLost = 1;
             break;
         }
       }
