@@ -109,7 +109,7 @@ void loop() {
     case IN_GAME :
       digitalWrite(LED_PIN_ROSSO, LOW); 
       if(penalty >= MAX_PENALTIES) {
-        Serial.println("GAME OVER!");
+        Serial.println("\nGAME OVER!");
         Serial.print("Final Score: ");
         Serial.println(score);
 
