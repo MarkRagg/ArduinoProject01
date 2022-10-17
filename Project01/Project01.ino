@@ -23,6 +23,7 @@
 
 #include <avr/sleep.h>
 #include "Timer.h"
+#include "EnableInterrupt.h"
 
 int fadeAmount;
 int currIntensity;
@@ -57,21 +58,23 @@ void setup() {
 
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN1), wakeUp, RISING);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN2), wakeUp, RISING);
+  enableInterrupt(BUTTON_PIN3, wakeUp, RISING);
+  enableInterrupt(BUTTON_PIN4, wakeUp, RISING);
   // Enable PCIE2 Bit3 = 1 (Port D)
-  PCICR |= B00000100;
+  /*PCICR |= B00000100;
   // Select PCINT20 Bit4 = 1 (Pin D4)
   // Select PCINT21 Bit5 = 1 (Pin D5)
   PCMSK2 |= bit(PCINT20);
-  PCMSK2 |= bit(PCINT21);
+  PCMSK2 |= bit(PCINT21);*/
   Serial.println("\nWelcome to the Catch the Led Pattern Game. Press Key T1 to Start\n");
   timer.start();
 }
 
 /** AttachInterrupt funziona solo con i pin 2 e 3, per utilizzare altri pin con gli interrupt 
     utilizzo la funzione ISR */
-ISR(PCINT2_vect) {
+/*ISR(PCINT2_vect) {
   sleep_disable();
-}
+}*/
 
 void loop() {
   delay(5);  //delay per fading
