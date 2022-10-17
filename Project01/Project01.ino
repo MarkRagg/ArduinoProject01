@@ -24,8 +24,6 @@
 #include <avr/sleep.h>
 #include "Timer.h"
 
-int pressed;
-int brightness;
 int fadeAmount;
 int currIntensity;
 int state;
@@ -33,7 +31,6 @@ int state;
 /** variables to calculate the difficulty */
 int difficulty;
 int incDiff;
-int availableTime;    /* rappresenta il tempo disponibile in cui rimangono accesi i led durante il gioco E il tempo a disposizione per riprodurre il pattern corretto  */
 
 unsigned int score;
 
@@ -43,7 +40,6 @@ int buttons[4] = {BUTTON_PIN1, BUTTON_PIN2, BUTTON_PIN3, BUTTON_PIN4};
 Timer timer(MILLIS);
 int patternLeds[4];
 int penalty;
-long prevts;
 
 void wakeUp() {
   sleep_disable();
@@ -56,7 +52,6 @@ void setup() {
   fadeAmount = 1;
   state = INITIAL_STATE;
   penalty = 0;
-  prevts = 0;
   score = 0;
   randomSeed(analogRead(5));
 
@@ -79,16 +74,19 @@ ISR(PCINT2_vect) {
 }  
 
 void loop() {
-  delay(5);
+  delay(5);   //delay per fading
 
   switch (state) {
     case INITIAL_STATE :
       if (isButtonPressed(START_GAME_BUTTON)) {
-      difficulty = (analogRead(POTENZIOMETRO) / 256) + 1;  
+      difficulty = (analogRead(POTENZIOMETRO) / 256) + 1;
+      
+      Serial.println("GO!\n");
+      Serial.print("Difficulty: ");
+      Serial.println(difficulty);
+      
       digitalWrite(LED_PIN_ROSSO, LOW); 
-      delay(100);
       state = IN_GAME;
-      Serial.println("GO!");
       startGame(difficulty);
     } else {
       currIntensity += fadeAmount;
@@ -112,7 +110,7 @@ void loop() {
       digitalWrite(LED_PIN_ROSSO, LOW); 
       if(penalty >= MAX_PENALTIES) {
         Serial.println("GAME OVER!");
-        Serial.println("Final Score:");
+        Serial.print("Final Score: ");
         Serial.println(score);
 
         score = 0;
@@ -149,23 +147,24 @@ void sleep(){
 }
 
 void startGame(int difficulty) {  
-  long int timer_start = random(1,6);
-  int availableTime = (10 - difficulty - incDiff) * 1000;
+  int initialWaitingTime = random(1,6) * 1000;
+  int patternTime = (10 - difficulty - incDiff) * 1000;
+  int availableTime = patternTime;
   int turnLost = 0;
   int ledsOn = 0;
   int correctLeds = 0;
 
   setLedsState(LOW);
-  Serial.println(availableTime);
-  Serial.print("incDiff: ");
-  Serial.println(incDiff);
-  Serial.print("Difficulty: ");
-  Serial.println(difficulty);
-  delay(timer_start*1000);
+
+  Serial.print(availableTime/1000);
+  Serial.println(" sec to recreate the pattern");
+  
+  delay(initialWaitingTime);
   
   ledsOn = createPattern();
   timer.start();
-  while(timer.read() <= availableTime && !turnLost) {
+
+  while(timer.read() <= patternTime && !turnLost) {
     for(int i = 0; i < GAME_LEDS; i++){
       if(isButtonPressed(i)){
         addPenalty("PENALTY: TOO EARLY");
@@ -184,7 +183,7 @@ void startGame(int difficulty) {
     if(ledsOn == correctLeds) {
       score++;
       timer.pause();
-      Serial.println("New point! Score: ");
+      Serial.print("New point! Score: ");
       Serial.println(score);
       
       switch(difficulty) {
