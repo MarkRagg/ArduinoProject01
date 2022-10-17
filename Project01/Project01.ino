@@ -156,8 +156,8 @@ void startGame(int difficulty) {
 
   setLedsState(LOW);
 
+  Serial.print("\nSeconds to recreate the pattern: ");
   Serial.print(availableTime/1000);
-  Serial.println(" sec to recreate the pattern");
   
   delay(initialWaitingTime);
   
@@ -167,7 +167,7 @@ void startGame(int difficulty) {
   while(timer.read() <= patternTime && !turnLost) {
     for(int i = 0; i < GAME_LEDS; i++){
       if(isButtonPressed(i)){
-        addPenalty("PENALTY: TOO EARLY");
+        addPenalty("\nPENALTY: TOO EARLY");
         turnLost = 1;
         break;
       }
@@ -183,7 +183,7 @@ void startGame(int difficulty) {
     if(ledsOn == correctLeds) {
       score++;
       timer.pause();
-      Serial.print("New point! Score: ");
+      Serial.print("\nNew point! Score: ");
       Serial.println(score);
       
       switch(difficulty) {
@@ -210,7 +210,7 @@ void startGame(int difficulty) {
             patternLeds[i] = TAKEN;
             correctLeds++;
         } else if (patternLeds[i] == INCORRECT) {
-            addPenalty("PENALTY: WRONG PATTERN");
+            addPenalty("\nPENALTY: WRONG PATTERN");
             timer.pause();
             turnLost = 1;
             break;
@@ -223,7 +223,7 @@ void startGame(int difficulty) {
   setLedsState(LOW);
   
   if(timer.read() >= availableTime) {
-    addPenalty("PENALTY: TIME OVER");
+    addPenalty("\nPENALTY: TIME OVER");
   }
   return;
 }
