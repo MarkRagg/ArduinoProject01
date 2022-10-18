@@ -158,6 +158,7 @@ void startGame(int difficulty) {
   while (timer.read() <= patternTime && !turnLost) {
     for (int i = 0; i < GAME_LEDS; i++) {
       if (isButtonPressed(i)) {
+        timer.stop();
         addPenalty("\nPENALTY: TOO EARLY");
         turnLost = 1;
         break;
@@ -178,16 +179,16 @@ void startGame(int difficulty) {
       Serial.println(score);
       switch (difficulty) {
         case 1:
-          incDiff = (availableTime <= 2000 ? incDiff = incDiff : incDiff + 0.25);
+          incDiff = (availableTime <= 2000 ? incDiff = 9.00 : incDiff + 0.25);
           break;
         case 2:
-          incDiff = (availableTime <= 1500 ? incDiff = incDiff : incDiff + 0.25);
+          incDiff = (availableTime <= 1500 ? incDiff = 4.25 : incDiff + 0.25);
           break;
         case 3:
-          incDiff = (availableTime <= 1250 ? incDiff = incDiff : incDiff + 0.25);
+          incDiff = (availableTime <= 1000 ? incDiff = 3.00 : incDiff + 0.25);
           break;
         case 4:
-          incDiff = (availableTime <= 1000 ? incDiff = incDiff : incDiff + 0.25);
+          incDiff = (availableTime <= 1000 ? incDiff = 2.375 : incDiff + 0.25);
           break;
       }
       break;
@@ -209,6 +210,7 @@ void startGame(int difficulty) {
     }
   }
 
+  timer.pause();
   delay(1000);
   setLedsState(LOW);
 
