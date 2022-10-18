@@ -31,7 +31,7 @@ int state;
 
 /** variables to calculate the difficulty */
 int difficulty;
-int incDiff;
+double incDiff;
 
 unsigned int score;
 
@@ -72,7 +72,7 @@ void loop() {
       if (isButtonPressed(START_GAME_BUTTON)) {
         difficulty = (analogRead(POTENZIOMETRO) / 256) + 1;
         score = 0;
-        incDiff = 0;
+        incDiff = 0.25;
         penalty = 0;
         Serial.println("GO!\n");
         Serial.print("Difficulty: ");
@@ -138,11 +138,12 @@ void sleep() {
 
 void startGame(int difficulty) {
   int initialWaitingTime = random(1, 6) * 1000;
-  int patternTime = (10 - difficulty - incDiff) * 1000;
-  int availableTime = patternTime;
+  double patternTime = (10 - ((double)difficulty * incDiff)) * 1000;
+  double availableTime = patternTime;
   int turnLost = 0;
   int ledsOn = 0;
   int correctLeds = 0;
+  double var = 0.25;
 
   setLedsState(LOW);
 
@@ -157,6 +158,7 @@ void startGame(int difficulty) {
   while (timer.read() <= patternTime && !turnLost) {
     for (int i = 0; i < GAME_LEDS; i++) {
       if (isButtonPressed(i)) {
+        timer.stop();
         addPenalty("\nPENALTY: TOO EARLY");
         turnLost = 1;
         break;
@@ -175,19 +177,18 @@ void startGame(int difficulty) {
       timer.pause();
       Serial.print("\nNew point! Score: ");
       Serial.println(score);
-
       switch (difficulty) {
         case 1:
-          incDiff == 8 ? incDiff = incDiff : incDiff++;
+          incDiff = (availableTime <= 2000 ? incDiff = 9.00 : incDiff + 0.25);
           break;
         case 2:
-          incDiff == 7 ? incDiff = incDiff : incDiff++;
+          incDiff = (availableTime <= 1500 ? incDiff = 4.25 : incDiff + 0.25);
           break;
         case 3:
-          incDiff == 6 ? incDiff = incDiff : incDiff++;
+          incDiff = (availableTime <= 1000 ? incDiff = 3.00 : incDiff + 0.25);
           break;
         case 4:
-          incDiff == 5 ? incDiff = incDiff : incDiff++;
+          incDiff = (availableTime <= 1000 ? incDiff = 2.375 : incDiff + 0.25);
           break;
       }
       break;
@@ -209,6 +210,7 @@ void startGame(int difficulty) {
     }
   }
 
+  timer.pause();
   delay(1000);
   setLedsState(LOW);
 
