@@ -30,7 +30,7 @@ int state;
 
 /** variables to calculate the difficulty */
 int difficulty;
-int incDiff;
+double incDiff;
 
 unsigned int score;
 
@@ -81,7 +81,7 @@ void loop() {
       if (isButtonPressed(START_GAME_BUTTON)) {
         difficulty = (analogRead(POTENZIOMETRO) / 256) + 1;
         score = 0;
-        incDiff = 0;
+        incDiff = 0.25;
         penalty = 0;
         Serial.println("GO!\n");
         Serial.print("Difficulty: ");
@@ -147,8 +147,9 @@ void sleep() {
 
 void startGame(int difficulty) {
   int initialWaitingTime = random(1, 6) * 1000;
-  int patternTime = (10 - difficulty - incDiff) * 1000;
-  int availableTime = patternTime;
+  Serial.println(incDiff); 
+  double patternTime = (10 - ((double)difficulty * incDiff)) * 1000;
+  double availableTime = patternTime;
   int turnLost = 0;
   int ledsOn = 0;
   int correctLeds = 0;
@@ -187,16 +188,16 @@ void startGame(int difficulty) {
 
       switch (difficulty) {
         case 1:
-          incDiff == 8 ? incDiff = incDiff : incDiff++;
+          availableTime <= 2000 ? incDiff = incDiff : incDiff + 0.25;
           break;
         case 2:
-          incDiff == 7 ? incDiff = incDiff : incDiff++;
+          availableTime <= 1500 ? incDiff = incDiff : incDiff + 0.25;
           break;
         case 3:
-          incDiff == 6 ? incDiff = incDiff : incDiff++;
+          availableTime <= 1000 ? incDiff = incDiff : incDiff + 0.25;
           break;
         case 4:
-          incDiff == 5 ? incDiff = incDiff : incDiff++;
+          availableTime <= 500 ? incDiff = incDiff : incDiff + 0.25;
           break;
       }
       break;
