@@ -144,6 +144,7 @@ void startGame(int difficulty) {
   int turnLost = 0;
   int ledsOn = 0;
   int correctLeds = 0;
+  double var = 0.25;
 
   setLedsState(LOW);
 
@@ -176,19 +177,19 @@ void startGame(int difficulty) {
       timer.pause();
       Serial.print("\nNew point! Score: ");
       Serial.println(score);
-
+      Serial.println(availableTime);
       switch (difficulty) {
         case 1:
-          availableTime <= 2000 ? incDiff = incDiff : incDiff + 0.25;
+          incDiff = (availableTime <= 2000 ? incDiff = incDiff : incDiff + 0.25);
           break;
         case 2:
-          availableTime <= 1500 ? incDiff = incDiff : incDiff + 0.25;
+          incDiff = (availableTime <= 1500 ? incDiff = incDiff : incDiff + 0.25);
           break;
         case 3:
-          availableTime <= 1000 ? incDiff = incDiff : incDiff + 0.25;
+          incDiff = (availableTime <= 1250 ? incDiff = incDiff : incDiff + 0.25);
           break;
         case 4:
-          availableTime <= 500 ? incDiff = incDiff : incDiff + 0.25;
+          incDiff = (availableTime <= 1000 ? incDiff = incDiff : incDiff + 0.25);
           break;
       }
       break;
