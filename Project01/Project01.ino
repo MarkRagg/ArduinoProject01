@@ -56,8 +56,8 @@ void setup() {
   score = 0;
   randomSeed(analogRead(5));
 
-  attachInterrupt(digitalPinToInterrupt(BUTTON_PIN1), wakeUp, RISING);
-  attachInterrupt(digitalPinToInterrupt(BUTTON_PIN2), wakeUp, RISING);
+  enableInterrupt(BUTTON_PIN1, wakeUp, RISING);
+  enableInterrupt(BUTTON_PIN2, wakeUp, RISING);
   enableInterrupt(BUTTON_PIN3, wakeUp, RISING);
   enableInterrupt(BUTTON_PIN4, wakeUp, RISING);
   // Enable PCIE2 Bit3 = 1 (Port D)
