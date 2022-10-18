@@ -138,7 +138,6 @@ void sleep() {
 
 void startGame(int difficulty) {
   int initialWaitingTime = random(1, 6) * 1000;
-  Serial.println(incDiff); 
   double patternTime = (10 - ((double)difficulty * incDiff)) * 1000;
   double availableTime = patternTime;
   int turnLost = 0;
@@ -177,7 +176,6 @@ void startGame(int difficulty) {
       timer.pause();
       Serial.print("\nNew point! Score: ");
       Serial.println(score);
-      Serial.println(availableTime);
       switch (difficulty) {
         case 1:
           incDiff = (availableTime <= 2000 ? incDiff = incDiff : incDiff + 0.25);
