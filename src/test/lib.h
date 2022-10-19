@@ -1,6 +1,7 @@
 #ifndef __LIBH__
 #define __LIBH__
 
+// Library to manage a timer
 #include "Timer.h"
 
 // Number of game leds
@@ -35,41 +36,66 @@
 // Max number of penalties
 #define MAX_PENALTIES 3
 
-// 
+// Seconds to wait to go in sleep mode
+#define SEC_TO_SLEEP 10000
+
+// Tell if the button pressed is NOT correct
+// (the corresponding led is NOT in the pattern)
 #define INCORRECT 0
+
+// Tell if the button pressed is correct
+// (the corresponding led is in the pattern)
 #define CORRECT 1
+
+// Tell if a button has already been pressed
 #define TAKEN 2
 
+// Initialize the game
 void initialize();
 
+// Initialize the pins for input and output
 void initializePins();
 
+// Initialize the variables
 void initializeVariables();
 
+// Enable buttons interrupts
 void setInterrupts();
 
+// Set up the initial state
 void initialState();
 
+// Start the game and checks if it is over
 void inGame();
 
-void sleep();
-
-void wakeUp();
-
-void fading();
-
+// Set up the game at the given difficulty 
 void startGame(int difficulty);
 
+// Show the pattern to the player
 void showPattern();
 
+// Rapresents a turn of the game
 void play();
 
+// Arduino goes in deep sleep
+void sleep();
+
+// Arduino wakes up from sleeping
+void wakeUp();
+
+// Fading of the red led
+void fading();
+
+// Set all the game leds at the given state
 void setLedsState(int state);
 
+// Return true if the button given is pressed
 bool isButtonPressed(int button);
 
+// Increments the number of penalties, msg is the penalty message to display
 void addPenalty(String msg);
 
+// Create the random pattern for the leds, returns the number of leds on
 int createPattern();
 
 #endif

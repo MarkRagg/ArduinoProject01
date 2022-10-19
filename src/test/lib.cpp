@@ -1,32 +1,50 @@
 #include "lib.h"
-#include <avr/sleep.h>
 #include "Timer.h"
+#include <avr/sleep.h>
 #include "EnableInterrupt.h"
 
+// Variables to manage the fading
 int fadeAmount;
 int currIntensity;
+
+// Variable that describe the current state of the game
 int state;
 
-/* variables to calculate the difficulty */
+// Variables to calculate the difficulty
 int difficulty;
 double incDiff;
 
+// Variable that contains the current score of the player
 unsigned int score;
 
 int leds[GAME_LEDS] = { LED_PIN1, LED_PIN2, LED_PIN3, LED_PIN4 };
 int buttons[GAME_BUTTONS] = { BUTTON_PIN1, BUTTON_PIN2, BUTTON_PIN3, BUTTON_PIN4 };
 
-Timer timer(MILLIS);
+// Array that tells which leds are in the current pattern
 int patternLeds[4];
+
+// Variable that contains the current number of penalties
 int penalties;
 
+// Variable for the timer
+Timer timer(MILLIS);
 
 int initialWaitingTime;
+
+// Variable that contains the viewing time of the pattern
 double patternTime;
+
+// Variable that contains the available time to press the buttons
 double availableTime;
-int turnLost = 0;
-int ledsOn = 0;
-int correctLeds = 0;
+
+// Variable that tells the state of the current turn
+int turnLost;
+
+// Variable that contains the number of leds on
+int ledsOn;
+
+// Variable that contains the number of correct leds choosen by the player
+int correctLeds;
 
 void initialize() {
   Serial.begin(9600);
@@ -34,8 +52,11 @@ void initialize() {
   initializePins();
   initializeVariables();
   setInterrupts();
+
 	Serial.println("\nWelcome to the Catch the Led Pattern Game. Press Key T1 to Start\n");
-  timer.start();    
+
+  // Start the timer for the sleep
+  timer.start();
 }
 
 void initializePins() {
@@ -70,6 +91,7 @@ void initialState() {
 		score = 0;
 		incDiff = 0.25;
 		penalties = 0;
+    
 		Serial.println("GO!\n");
 		Serial.print("Difficulty: ");
 		Serial.println(difficulty);
@@ -81,8 +103,8 @@ void initialState() {
 		fading();
 	}
 
-	//
-	if (timer.read() >= 10000) {
+	// Checks if it is time to go to sleep
+	if (timer.read() >= SEC_TO_SLEEP) {
 		timer.stop();
 		Serial.println("Sleep mode: On");
 		digitalWrite(LED_PIN_ROSSO, LOW);
@@ -96,6 +118,7 @@ void initialState() {
 void inGame() {
 	digitalWrite(LED_PIN_ROSSO, LOW);
 
+  // Checks if the game is over
 	if (penalties >= MAX_PENALTIES) {
 		Serial.println("\nGAME OVER!");
 		Serial.print("Final Score: ");
@@ -132,8 +155,11 @@ void showPattern() {
   delay(initialWaitingTime);
 
   ledsOn = createPattern();
+
+  // Starts the viewing time of the pattern
   timer.start();
 
+  // Checks if the player press a button too early
   while (timer.read() <= patternTime && !turnLost) {
     for (int i = 0; i < GAME_BUTTONS; i++) {
       if (isButtonPressed(i)) {
@@ -151,16 +177,22 @@ void showPattern() {
 }
 
 void play() {
-	
-  
+  // Starts the available time to press the buttons
   timer.start();
 
   while (timer.read() <= availableTime && !turnLost) {
+
+    // Checks if the player reproduced the pattern
     if (ledsOn == correctLeds) {
       score++;
       timer.pause();
       Serial.print("\nNew point! Score: ");
       Serial.println(score);
+
+      /* 
+        The time available decreases, if the player scored, up to the minimum time,
+        that is different for every difficulty
+      */
       switch (difficulty) {
         case 1:
           incDiff = (availableTime <= 2000 ? incDiff = 9.00 : incDiff + 0.25);
@@ -178,6 +210,7 @@ void play() {
       break;
     }
 
+    // Checks the button pressed by the player
     for (int i = 0; i < GAME_BUTTONS; i++) {
       if (isButtonPressed(i)) {
         if (patternLeds[i] == CORRECT) {
@@ -198,6 +231,7 @@ void play() {
   delay(1000);
   setLedsState(LOW);
 
+  // Checks if the player exceeded the time available
   if (timer.read() > availableTime) {
     addPenalty("\nPENALTY: TIME OVER");
   }
