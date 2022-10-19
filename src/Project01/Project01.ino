@@ -1,42 +1,24 @@
-#define LED_PIN_ROSSO 9
-#define LED_PIN1 10
-#define LED_PIN2 11
-#define LED_PIN3 12
-#define LED_PIN4 13
-#define BUTTON_PIN1 2
-#define BUTTON_PIN2 3
-#define BUTTON_PIN3 4
-#define BUTTON_PIN4 5
-#define POTENZIOMETRO A0
-
-#define START_GAME_BUTTON 0
-#define GAME_LEDS 4
-
-#define INCORRECT 0
-#define CORRECT 1
-#define TAKEN 2
-
-#define INITIAL_STATE 100
-#define IN_GAME 101
-
-#define MAX_PENALTIES 3
+/*
+Authors: Francesco Carlucci, Marco Raggini, Veri Shtini
+*/  
 
 #include <avr/sleep.h>
 #include "Timer.h"
 #include "EnableInterrupt.h"
+#include "lib.h"
 
 int fadeAmount;
 int currIntensity;
 int state;
 
-/** variables to calculate the difficulty */
+/* variables to calculate the difficulty */
 int difficulty;
 double incDiff;
 
 unsigned int score;
 
-int leds[4] = { LED_PIN1, LED_PIN2, LED_PIN3, LED_PIN4 };
-int buttons[4] = { BUTTON_PIN1, BUTTON_PIN2, BUTTON_PIN3, BUTTON_PIN4 };
+int leds[GAME_LEDS] = { LED_PIN1, LED_PIN2, LED_PIN3, LED_PIN4 };
+int buttons[GAME_BUTTONS] = { BUTTON_PIN1, BUTTON_PIN2, BUTTON_PIN3, BUTTON_PIN4 };
 
 Timer timer(MILLIS);
 int patternLeds[4];
@@ -70,7 +52,7 @@ void loop() {
   switch (state) {
     case INITIAL_STATE:
       if (isButtonPressed(START_GAME_BUTTON)) {
-        difficulty = (analogRead(POTENZIOMETRO) / 256) + 1;
+        difficulty = (analogRead(POTENTIOMETER) / 256) + 1;
         score = 0;
         incDiff = 0.25;
         penalty = 0;
@@ -124,7 +106,7 @@ void initialize() {
     pinMode(buttons[i], INPUT);
     patternLeds[i] = INCORRECT;
   }
-  pinMode(POTENZIOMETRO, INPUT);
+  pinMode(POTENTIOMETER, INPUT);
   pinMode(LED_PIN_ROSSO, OUTPUT);
 }
 
