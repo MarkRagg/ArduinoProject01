@@ -158,6 +158,7 @@ void startGame(int difficulty) {
   while (timer.read() <= patternTime && !turnLost) {
     for (int i = 0; i < GAME_LEDS; i++) {
       if (isButtonPressed(i)) {
+        timer.stop();
         addPenalty("\nPENALTY: TOO EARLY");
         turnLost = 1;
         break;
@@ -209,7 +210,7 @@ void startGame(int difficulty) {
     }
   }
 
-  timer.stop();
+  timer.pause();
   delay(1000);
   setLedsState(LOW);
 
