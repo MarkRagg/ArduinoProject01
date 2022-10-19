@@ -1,7 +1,7 @@
 #ifndef __LIBH__
 #define __LIBH__
 
-/* lib.h */
+#include "Timer.h"
 
 // Number of game leds
 #define GAME_LEDS 4
@@ -40,8 +40,17 @@
 #define CORRECT 1
 #define TAKEN 2
 
-
 void initialize();
+
+void initializePins();
+
+void initializeVariables();
+
+void setInterrupts();
+
+void initialState();
+
+void inGame();
 
 void sleep();
 
@@ -49,9 +58,15 @@ void wakeUp();
 
 void fading();
 
+void startGame(int difficulty);
+
+void showPattern();
+
+void play();
+
 void setLedsState(int state);
 
-int isButtonPressed(int button);
+bool isButtonPressed(int button);
 
 void addPenalty(String msg);
 
