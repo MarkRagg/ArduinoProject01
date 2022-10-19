@@ -158,7 +158,6 @@ void startGame(int difficulty) {
   while (timer.read() <= patternTime && !turnLost) {
     for (int i = 0; i < GAME_LEDS; i++) {
       if (isButtonPressed(i)) {
-        timer.stop();
         addPenalty("\nPENALTY: TOO EARLY");
         turnLost = 1;
         break;
@@ -201,8 +200,8 @@ void startGame(int difficulty) {
           patternLeds[i] = TAKEN;
           correctLeds++;
         } else if (patternLeds[i] == INCORRECT) {
+          timer.stop();
           addPenalty("\nPENALTY: WRONG PATTERN");
-          timer.pause();
           turnLost = 1;
           break;
         }
@@ -210,11 +209,11 @@ void startGame(int difficulty) {
     }
   }
 
-  timer.pause();
+  timer.stop();
   delay(1000);
   setLedsState(LOW);
 
-  if (timer.read() >= availableTime) {
+  if (timer.read() > availableTime) {
     addPenalty("\nPENALTY: TIME OVER");
   }
   return;
