@@ -35,9 +35,26 @@
 // Max number of penalties
 #define MAX_PENALTIES 3
 
-//
+// 
 #define INCORRECT 0
 #define CORRECT 1
 #define TAKEN 2
+
+
+void initialize();
+
+void sleep();
+
+void wakeUp();
+
+void fading();
+
+void setLedsState(int state);
+
+int isButtonPressed(int button);
+
+void addPenalty(String msg);
+
+int createPattern();
 
 #endif

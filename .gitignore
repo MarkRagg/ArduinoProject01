@@ -1,2 +1,5 @@
 #Exclude doc files
 *.docx
+
+#Exclude vs files
+*.vscode
